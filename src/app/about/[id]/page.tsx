@@ -8,7 +8,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params;
+  const { id } = params; 
   const res = await fetch(`https://dummyjson.com/products/${id}`, {
     next: { revalidate: 60 * 60 },
   });
