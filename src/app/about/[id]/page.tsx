@@ -3,14 +3,14 @@ import { Metadata } from "next";
 import { memo } from "react";
 
 type Props = {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+  const { id } = params;
   const res = await fetch(`https://dummyjson.com/products/${id}`, {
-    cache: "no-store",
+    next: { revalidate: 60 * 60 },
   });
   const product: IProduct = await res.json();
 
@@ -26,13 +26,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  const respons = await fetch("https://dummyjson.com/products?limit=50", {
+  const res = await fetch("https://dummyjson.com/products?limit=50", {
     next: { revalidate: 60 * 5 },
   });
-  const data = await respons.json();
-  return data?.products?.map((p: IProduct) => ({ id: p.id.toString() }));
+  const data = await res.json();
+  return data.products.map((p: IProduct) => ({ id: p.id.toString() }));
 }
-
 
 const Details = async ({ params }: { params: { id: string } }) => {
   const { id } = params;
@@ -41,9 +40,7 @@ const Details = async ({ params }: { params: { id: string } }) => {
     next: { revalidate: 60 * 5 },
   });
 
-  if (!res.ok) {
-    throw new Error("Ma'lumotni yuklashda xatolik!");
-  }
+  if (!res.ok) throw new Error("Ma'lumotni yuklashda xatolik!");
 
   const product: IProduct = await res.json();
 
@@ -60,9 +57,7 @@ const Details = async ({ params }: { params: { id: string } }) => {
 
         <div className="flex-1 flex flex-col gap-4">
           <h1 className="text-3xl font-bold text-gray-800">{product.title}</h1>
-          <p className="text-2xl font-semibold text-red-500">
-            ${product.price}
-          </p>
+          <p className="text-2xl font-semibold text-red-500">${product.price}</p>
           <p className="text-gray-700 leading-relaxed">{product.description}</p>
         </div>
       </div>
