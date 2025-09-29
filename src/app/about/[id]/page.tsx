@@ -6,14 +6,14 @@ type Props = {
   params: { id: string };
   searchParams: { [key: string]: string | string[] | undefined };
 };
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params; 
+  const { id } = params;
   const res = await fetch(`https://dummyjson.com/products/${id}`, {
     next: { revalidate: 60 * 60 },
   });
-  const product: IProduct = await res.json();
+  if (!res.ok) throw new Error(`Product ${id} not found`);
 
+  const product: IProduct = await res.json();
   return {
     title: `${product.title} | Product Details`,
     description: product.description,
@@ -24,6 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
   };
 }
+
+
+
 
 export async function generateStaticParams() {
   const res = await fetch("https://dummyjson.com/products?limit=50", {
