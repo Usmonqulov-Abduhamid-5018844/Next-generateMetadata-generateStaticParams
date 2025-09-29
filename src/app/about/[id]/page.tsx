@@ -1,12 +1,13 @@
 import { IProduct } from "@/types";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { memo } from "react";
 
-type Props = {
+
+export async function generateMetadata({
+  params,
+}: {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+}): Promise<Metadata> {
   const { id } = params;
   const res = await fetch(`https://dummyjson.com/products/${id}`, {
     next: { revalidate: 60 * 60 },
@@ -26,8 +27,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 
-
-
 export async function generateStaticParams() {
   const res = await fetch("https://dummyjson.com/products?limit=50", {
     next: { revalidate: 60 * 5 },
@@ -36,13 +35,16 @@ export async function generateStaticParams() {
   return data.products.map((p: IProduct) => ({ id: p.id.toString() }));
 }
 
-const Details = async ({ params }: { params: { id: string } }) => {
-  const { id } = params;
 
+const Details = async ({
+  params,
+}: {
+  params: { id: string };
+}) => {
+  const { id } = params;
   const res = await fetch(`https://dummyjson.com/products/${id}`, {
     next: { revalidate: 60 * 5 },
   });
-
   if (!res.ok) throw new Error("Ma'lumotni yuklashda xatolik!");
 
   const product: IProduct = await res.json();
